@@ -1,0 +1,91 @@
+name: 'Login to CUE Registry via GitHub OIDC'
+description: 'Authenticate to a CUE registry using GitHub OIDC tokens'
+branding:
+  icon: 'log-in'
+  color: 'blue'
+
+inputs:
+  registry:
+    description: 'CUE registry'
+    required: false
+    default: 'registry.cue.works'
+  update_logins:
+    description: 'Whether to update the local CUE logins.json file'
+    required: false
+    default: 'true'
+
+outputs:
+  access_token:
+    description: 'The access token obtained from the registry'
+    value: ${{ steps.oidc.outputs.access_token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get OIDC token and login
+      id: oidc
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const registry = '${{ inputs.registry }}'
+          const registryUrl = `https://${registry}`
+          
+          // Get OIDC token with registry as audience
+          let token = null
+          try {
+            token = await core.getIDToken(registryUrl)
+          } catch (e) {
+            throw new Error(`Failed to obtain OIDC token. Did you specify the id-token: write permission? ${e.message}`)
+          }
+
+          // Exchange OIDC token for registry access token
+          const res = await fetch(`${registryUrl}/login/oidc/github`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id_token: token })
+          })
+          if (!res.ok) {
+            let msg = `HTTP ${res.status} ${res.statusText}`;
+            try {
+              const data = await res.json()
+              msg = data.error_description || JSON.stringify(data)
+            } catch (e) {
+            }
+            throw new Error(`${registry}: ${msg}`)
+          }
+          const data = await res.json()
+          core.setOutput('access_token', data.access_token)
+
+          // Write credentials to cue logins file if update_logins is true
+          if ('${{ inputs.update_logins }}' === 'true') {
+            const fs = require('fs')
+            const path = require('path')
+            const homeDir = process.env.HOME || process.env.USERPROFILE
+            const configDir = path.join(homeDir, '.config', 'cue')
+            const loginsPath = path.join(configDir, 'logins.json')
+            
+            fs.mkdirSync(configDir, { recursive: true })
+            
+            let logins = {}
+            if (fs.existsSync(loginsPath)) {
+              try {
+                const content = fs.readFileSync(loginsPath, 'utf8')
+                if (content.trim()) {
+                  logins = JSON.parse(content)
+                }
+              } catch (err) {
+                console.warn('Failed to parse existing logins.json, will overwrite:', err.message)
+              }
+            }
+            
+            logins.registries = logins.registries || {}
+            
+            logins.registries[registry] = {
+              access_token: data.access_token,
+              token_type: "Bearer"
+            }
+            
+            fs.writeFileSync(loginsPath, JSON.stringify(logins, null, 2) + '\n')
+          }

@@ -5,13 +5,18 @@ A GitHub Action that authenticates to a CUE registry using GitHub's OIDC tokens.
 ## Features
 
 - Authenticates using GitHub's OIDC provider (no static credentials needed)
-- Optionally, automatically configures `cue` CLI `logins.json` file with registry credentials
+- Optionally, automatically configures `cue` CLI `logins.json` file with
+  registry credentials
 
 ## Prerequisites
 
-Your CUE Central Registry must be [configured](https://registry.cue.works/account/oidc) to trust the registry's OIDC endpoint.
+Your CUE Central Registry must be
+[configured](https://registry.cue.works/account/oidc) to trust the registry's
+OIDC endpoint.
 
-The workflow job must contain a [`permissions`](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions) entry enabling access to the GitHub OIDC token:
+The workflow job must contain a
+[`permissions`](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions)
+entry enabling access to the GitHub OIDC token:
 
 ```yaml
 permissions:
@@ -27,13 +32,16 @@ permissions:
   uses: cue-labs/registry-login-action@v1
 ```
 
-Once this is in place, the subsequent steps can use the `cue` CLI commands logged-in as specified in the CUE Central Registry trust configuration.
+Once this is in place, the subsequent steps can use the `cue` CLI commands
+logged-in as specified in the CUE Central Registry trust configuration.
 
 ### Using the access token
 
-By default no additional steps are needed as the `cue` command is automatically authenticated after the login step.
+By default no additional steps are needed as the `cue` command is automatically
+authenticated after the login step.
 
-For other use-cases, the action outputs an `access_token` that can be used as a bearer token for direct API calls:
+For other use-cases, the action outputs an `access_token` that can be used as a
+bearer token for direct API calls:
 
 ```yaml
 - name: Login to CUE registry

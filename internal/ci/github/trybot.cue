@@ -29,9 +29,15 @@ workflows: trybot: _repo.bashWorkflow & {
 
 	jobs: test: {
 		"runs-on": _repo.linuxMachine
+		permissions: "id-token": "write"
 
 		steps: [
 			for v in _repo.checkoutCode {v},
+
+			{
+				name: "Login to CUE Central Registry"
+				uses: "./"
+			},
 		]
 	}
 }

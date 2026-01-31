@@ -32,6 +32,11 @@ workflows: trybot: _repo.bashWorkflow & {
 
 		steps: [
 			for v in _repo.checkoutCode {v},
+
+			{
+				name: "Login to CUE Central Registry"
+				uses: "./"
+			},
 		]
 	}
 }

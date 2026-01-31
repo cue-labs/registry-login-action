@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9c9dacd_e86021ed",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-01-31T15:40:27Z",
+      "side": 1,
+      "message": "FYI we need to submit this CL before we can trigger the trybots\n\nA push to `ci/test` proves things work:\n\nhttps://github.com/cue-labs/registry-login-action/actions/runs/21546802555/job/62089355028",
+      "revId": "05ab924592e5e1b15686766e5416d57300d219fd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

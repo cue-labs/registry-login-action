@@ -33,6 +33,24 @@
       "message": "this is the default I think",
       "revId": "05ab924592e5e1b15686766e5416d57300d219fd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e0503bce_46ccda1b",
+        "filename": "internal/ci/repo/repo.cue",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-01-31T15:43:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "989e544c_f3a3df51",
+      "revId": "05ab924592e5e1b15686766e5416d57300d219fd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

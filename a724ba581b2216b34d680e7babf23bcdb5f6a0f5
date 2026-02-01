@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2215b565_aa65b744",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1017720
+      },
+      "writtenOn": "2026-02-01T06:27:07Z",
+      "side": 1,
+      "message": "practice?",
+      "range": {
+        "startLine": 79,
+        "startChar": 58,
+        "endLine": 79,
+        "endChar": 66
+      },
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "80ee927a_93c8f206",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1017720
+      },
+      "writtenOn": "2026-02-01T06:27:07Z",
+      "side": 1,
+      "message": "TIL, it\u0027s pretty neat that we can limit the token to just reading actions.",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c48eda8_99d6d8c5",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1017720
+      },
+      "writtenOn": "2026-02-01T06:27:07Z",
+      "side": 1,
+      "message": "I\u0027d drop this line, it\u0027s pretty obvious",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d53252fa_74af1bfc",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1017720
+      },
+      "writtenOn": "2026-02-01T06:27:07Z",
+      "side": 1,
+      "message": "classic AI code :) can we turn it down a little on the verbose comments and emojis?",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

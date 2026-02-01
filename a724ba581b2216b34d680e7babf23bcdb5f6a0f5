@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cf74c99c_e5084c65",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-02-01T09:15:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2215b565_aa65b744",
+      "range": {
+        "startLine": 79,
+        "startChar": 58,
+        "endLine": 79,
+        "endChar": 66
+      },
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "80ee927a_93c8f206",
@@ -37,6 +61,24 @@
       "writtenOn": "2026-02-01T06:27:07Z",
       "side": 1,
       "message": "TIL, it\u0027s pretty neat that we can limit the token to just reading actions.",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9ff4172c_1ed7ed68",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-02-01T09:15:45Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "80ee927a_93c8f206",
       "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },

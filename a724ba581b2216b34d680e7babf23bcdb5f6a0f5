@@ -100,6 +100,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "59a11c70_0b1dd7c8",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-02-01T09:19:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3c48eda8_99d6d8c5",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d53252fa_74af1bfc",
@@ -113,6 +131,24 @@
       "writtenOn": "2026-02-01T06:27:07Z",
       "side": 1,
       "message": "classic AI code :) can we turn it down a little on the verbose comments and emojis?",
+      "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "11669f0b_0d1bad62",
+        "filename": "internal/ci/github/trybot.cue",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1017723
+      },
+      "writtenOn": "2026-02-01T09:19:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d53252fa_74af1bfc",
       "revId": "a724ba581b2216b34d680e7babf23bcdb5f6a0f5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }

@@ -29,7 +29,7 @@ runs: {
 	steps: [{
 		name: "Get OIDC token and login"
 		id:   "oidc"
-		uses: "actions/github-script@v7"
+		uses: "actions/github-script@v8"
 		with: {
 			script: _ @embed(file=action.js,type=text)
 		}

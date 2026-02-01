@@ -30,6 +30,7 @@ workflows: trybot: _repo.bashWorkflow & {
 	jobs: test: {
 		"runs-on": _repo.linuxMachine
 		permissions: "id-token": "write"
+		outputs: access_token:   "${{ steps.login.outputs.access_token }}"
 
 		steps: [
 			for v in _repo.checkoutCode {v},
@@ -69,6 +70,52 @@ workflows: trybot: _repo.bashWorkflow & {
 				name: "Ensure the access token is masked"
 				run: """
 					echo "The secret is: <${{ steps.login.outputs.access_token }}>"
+					"""
+			},
+		]
+	}
+
+	// Verify that the masking in the previous job worked in practise
+	jobs: verify: {
+		"runs-on": _repo.linuxMachine
+		needs:     "test"
+		permissions: actions: "read"
+
+		steps: [
+			{
+				name: "Check logs for leak"
+				env: {
+
+					// We need the GitHub Token to call the API
+					GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+					// We import the actual secret value from Job A to search for it
+					SECRET_TO_FIND: "${{ needs.test.outputs.access_token }}"
+				}
+				run: """
+					 # 1. Download the logs for this workflow run
+					 # "gh run view" gets details for the current run
+					 # "--log" downloads the log archive
+					 gh run view ${{ github.run_id }} --repo ${{ github.repository }} --log > full_logs.txt
+
+					 # 2. Grep the logs for the plaintext secret
+					 # We use 'grep -F' for fixed string search (no regex)
+					 # We use 'grep -q' for quiet mode (exit 0 if found, 1 if not)
+
+					 EXPECTED_MASKED_STRING="The secret is: <***>"
+
+					 if grep -Fq "$EXPECTED_MASKED_STRING" full_logs.txt; then
+						echo "✅ PASS: Found expected masked log line: '$EXPECTED_MASKED_STRING'"
+					 else
+						echo "❌ FAIL: Could not find the masked log line. Did the job run?"
+						exit 1
+					 fi
+
+					 if grep -Fq "$SECRET_TO_FIND" full_logs.txt; then
+						echo "❌ FAILURE: Found the plaintext secret in the logs!"
+						exit 1
+					 else
+						echo "✅ SUCCESS: The secret was NOT found in the logs (masking worked)."
+					 fi
 					"""
 			},
 		]

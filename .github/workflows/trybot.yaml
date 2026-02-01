@@ -20,6 +20,8 @@ jobs:
     runs-on: namespace-profile-linux-amd64
     permissions:
       id-token: write
+    outputs:
+      access_token: ${{ steps.login.outputs.access_token }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -96,3 +98,18 @@ jobs:
         uses: ./
       - name: Ensure the access token is masked
         run: 'echo "The secret is: <${{ steps.login.outputs.access_token }}>"'
+  verify:
+    defaults:
+      run:
+        shell: bash --noprofile --norc -euo pipefail {0}
+    runs-on: namespace-profile-linux-amd64
+    needs: test
+    permissions:
+      actions: read
+    steps:
+      - name: Check logs for leak
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SECRET_TO_FIND: ${{ needs.test.outputs.access_token }}
+          TARGET_JOB_NAME: test
+        run: "echo \"\U0001F50D Looking for job named: '$TARGET_JOB_NAME'\"\n\n# 1. Get the specific Job ID\n# We use the API to list all jobs in this run, then use jq to filter by name and get the ID.\nJOB_ID=$(gh api \"/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs\" \\\n  --jq \".jobs[] | select(.name == \\\"$TARGET_JOB_NAME\\\") | .id\" | head -n 1)\n\nif [ -z \"$JOB_ID\" ]; then\n  echo \"❌ Error: Could not find a job named '$TARGET_JOB_NAME'\"\n  echo \"Available jobs:\"\n  gh api \"/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs\" --jq '.jobs[].name'\n  exit 1\nfi\n\necho \"✅ Found Job ID: $JOB_ID\"\n\n# 2. Download the log for ONLY that job\n# This endpoint works instantly once the specific job is done.\ngh api \"/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs\" > full_logs.txt\n\n# 1. Download the logs for this workflow run\n# \"gh run view\" gets details for the current run\n# \"--log\" downloads the log archive\ngh run view ${{ github.run_id }} --repo ${{ github.repository }} --log > full_logs.txt\n\n# 2. Grep the logs for the plaintext secret\n# We use 'grep -F' for fixed string search (no regex)\n# We use 'grep -q' for quiet mode (exit 0 if found, 1 if not)\n\nEXPECTED_MASKED_STRING=\"The secret is: <***>\"\n\nif grep -Fq \"$EXPECTED_MASKED_STRING\" full_logs.txt; then\n  echo \"✅ PASS: Found expected masked log line: '$EXPECTED_MASKED_STRING'\"\nelse\n  echo \"❌ FAIL: Could not find the masked log line. Did the job run?\"\n  exit 1\nfi\n\nif grep -Fq \"$SECRET_TO_FIND\" full_logs.txt; then\n  echo \"❌ FAILURE: Found the plaintext secret in the logs!\"\n  exit 1\nelse\n  echo \"✅ SUCCESS: The secret was NOT found in the logs (masking worked).\"\nfi"

@@ -1,0 +1,7 @@
+Code-Review+2: Daniel Martí <mvdan@mvdan.cc>
+TryBot-Result+1: CUE porcuepine <cue.porcuepine@gmail.com>
+Submitted-by: Paul Jolly <paul@myitcv.io>
+Submitted-at: Sun, 01 Feb 2026 06:04:47 +0000
+Reviewed-on: https://cue.gerrithub.io/c/cue-labs/registry-login-action/+/1230256
+Project: cue-labs/registry-login-action
+Branch: refs/heads/main

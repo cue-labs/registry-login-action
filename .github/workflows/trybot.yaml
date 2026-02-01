@@ -93,6 +93,10 @@ jobs:
         run: |-
           echo "github.event.head_commit.message contains Dispatch-Trailer but we are on a protected branch"
           false
+      - name: Install CUE
+        uses: cue-lang/setup-cue@v1.0.1
+        with:
+          version: latest
       - name: Install Go
         uses: actions/setup-go@v6
         with:
@@ -132,5 +136,7 @@ jobs:
       - name: Login to CUE Central Registry
         id: login
         uses: ./
+      - name: Use Central Registry
+        run: cue eval cue.dev/x/githubactions@latest
       - name: Ensure the access token is masked
         run: 'echo "The secret is: <${{ steps.login.outputs.access_token }}>"'

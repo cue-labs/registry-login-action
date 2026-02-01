@@ -63,5 +63,5 @@ if ("${{ inputs.update_logins }}" === "true") {
     token_type: "Bearer",
   };
 
-  fs.writeFileSync(loginsPath, JSON.stringify(logins, null, 2) + "\\n");
+  fs.writeFileSync(loginsPath, JSON.stringify(logins, null, 2) + "\n");
 }

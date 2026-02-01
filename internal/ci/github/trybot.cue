@@ -36,6 +36,11 @@ workflows: trybot: _repo.bashWorkflow & {
 		steps: [
 			for v in _repo.checkoutCode {v},
 
+			{
+				name: "Install CUE"
+				uses: "cue-lang/setup-cue@v1.0.1"
+				with: version: "latest"
+			},
 			for v in _installGo {v},
 			for v in _repo.setupCaches {v},
 
@@ -65,6 +70,15 @@ workflows: trybot: _repo.bashWorkflow & {
 				name: "Login to CUE Central Registry"
 				id:   "login"
 				uses: "./"
+			},
+
+			// Use the Central Registry with cmd/cue to verify we wrote
+			// a valid logins.json file
+			{
+				name: "Use Central Registry"
+				run: """
+					cue eval cue.dev/x/githubactions@latest
+					"""
 			},
 
 			{

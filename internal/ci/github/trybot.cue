@@ -34,10 +34,39 @@ workflows: trybot: _repo.bashWorkflow & {
 		steps: [
 			for v in _repo.checkoutCode {v},
 
+			for v in _installGo {v},
+
+			{
+				name: "Verify"
+				run:  "go mod verify"
+			},
+			{
+				name: "Generate"
+				run:  "go generate ./..."
+			},
+			{
+				name: "Test"
+				run:  "go test ./..."
+			},
+			{
+				name: "Race test"
+				run:  "go test -race ./..."
+			},
+			_repo.goChecks,
+			_repo.checkGitClean,
+
+			// Only now that we have check git is clean should we test
+			// the action itself. This ensures we don't have any skew
+			// between generated files.
 			{
 				name: "Login to CUE Central Registry"
 				uses: "./"
 			},
 		]
 	}
+}
+
+_installGo: _repo.installGo & {
+	#setupGo: with: "go-version": _repo.latestGo
+	_
 }

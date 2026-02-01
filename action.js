@@ -28,6 +28,7 @@ if (!res.ok) {
   throw new Error(`${registry}: ${msg}`);
 }
 const data = await res.json();
+core.setSecret(data.access_token);
 core.setOutput("access_token", data.access_token);
 
 // Write credentials to cue logins file if update_logins is true

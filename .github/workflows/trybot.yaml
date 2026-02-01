@@ -56,4 +56,7 @@ jobs:
           echo "github.event.head_commit.message contains Dispatch-Trailer but we are on a protected branch"
           false
       - name: Login to CUE Central Registry
+        id: login
         uses: ./
+      - name: Ensure the access token is masked
+        run: 'echo "The secret is: <${{ steps.login.outputs.access_token }}>"'

@@ -60,7 +60,15 @@ workflows: trybot: _repo.bashWorkflow & {
 			// between generated files.
 			{
 				name: "Login to CUE Central Registry"
+				id:   "login"
 				uses: "./"
+			},
+
+			{
+				name: "Ensure the access token is masked"
+				run: """
+					echo "The secret is: <${{ steps.login.outputs.access_token }}>"
+					"""
 			},
 		]
 	}

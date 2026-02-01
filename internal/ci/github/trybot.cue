@@ -30,6 +30,7 @@ workflows: trybot: _repo.bashWorkflow & {
 	jobs: test: {
 		"runs-on": _repo.linuxMachine
 		permissions: "id-token": "write"
+		outputs: access_token:   "${{ steps.login.outputs.access_token }}"
 
 		steps: [
 			for v in _repo.checkoutCode {v},
@@ -70,6 +71,73 @@ workflows: trybot: _repo.bashWorkflow & {
 				run: """
 					echo "The secret is: <${{ steps.login.outputs.access_token }}>"
 					"""
+			},
+		]
+	}
+
+	// Verify that the masking in the previous job worked in practise
+	jobs: verify: {
+		"runs-on": _repo.linuxMachine
+		needs:     "test"
+		permissions: actions: "read"
+
+		steps: [
+			{
+				name: "Check logs for leak"
+				env: {
+
+					// We need the GitHub Token to call the API
+					GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+					// We import the actual secret value from Job A to search for it
+					SECRET_TO_FIND: "${{ needs.test.outputs.access_token }}"
+
+					TARGET_JOB_NAME: "test"
+				}
+				run: #"""
+					echo "🔍 Looking for job named: '$TARGET_JOB_NAME'"
+
+					# 1. Get the specific Job ID
+					# We use the API to list all jobs in this run, then use jq to filter by name and get the ID.
+					JOB_ID=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+					  --jq ".jobs[] | select(.name == \"$TARGET_JOB_NAME\") | .id" | head -n 1)
+
+					if [ -z "$JOB_ID" ]; then
+					  echo "❌ Error: Could not find a job named '$TARGET_JOB_NAME'"
+					  echo "Available jobs:"
+					  gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --jq '.jobs[].name'
+					  exit 1
+					fi
+
+					echo "✅ Found Job ID: $JOB_ID"
+
+					# 2. Download the log for ONLY that job
+					# This endpoint works instantly once the specific job is done.
+					gh api "/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs" > full_logs.txt
+
+					# 3. Grep the logs for the expected masked string.
+					# We use 'grep -F' for fixed string search (no regex)
+					# We use 'grep -q' for quiet mode (exit 0 if found, 1 if not)
+
+					EXPECTED_MASKED_STRING="The secret is: <***>"
+
+					if grep -Fq "$EXPECTED_MASKED_STRING" full_logs.txt; then
+					  echo "✅ PASS: Found expected masked log line: '$EXPECTED_MASKED_STRING'"
+					else
+					  echo "❌ FAIL: Could not find the masked log line. Did the job run?"
+					  exit 1
+					fi
+
+					# 4. Grep the logs for the plaintext secret
+					# We use 'grep -F' for fixed string search (no regex)
+					# We use 'grep -q' for quiet mode (exit 0 if found, 1 if not)
+
+					if grep -Fq "$SECRET_TO_FIND" full_logs.txt; then
+					  echo "❌ FAILURE: Found the plaintext secret in the logs!"
+					  exit 1
+					else
+					  echo "✅ SUCCESS: The secret was NOT found in the logs (masking worked)."
+					fi
+					"""#
 			},
 		]
 	}

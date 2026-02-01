@@ -27,7 +27,9 @@ workflows: trybot: _repo.bashWorkflow & {
 		pull_request: {}
 	}
 
-	jobs: test: {
+	let testJob = "test"
+
+	jobs: (testJob): {
 		"runs-on": _repo.linuxMachine
 		permissions: "id-token": "write"
 
@@ -70,6 +72,49 @@ workflows: trybot: _repo.bashWorkflow & {
 				run: """
 					echo "The secret is: <${{ steps.login.outputs.access_token }}>"
 					"""
+			},
+		]
+	}
+
+	// Verify that the masking in the previous job worked in practice
+	jobs: verify: {
+		"runs-on": _repo.linuxMachine
+		needs:     testJob
+		permissions: actions: "read"
+
+		steps: [
+			{
+				name: "Check logs for leak"
+				env: {
+					GH_TOKEN:               "${{ secrets.GITHUB_TOKEN }}"
+					TARGET_JOB_NAME:        testJob
+					EXPECTED_MASKED_STRING: "The secret is: <***>"
+				}
+				run: #"""
+					# 1. Get the specific Job ID of the 'test' job
+					JOB_ID=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+					  --jq ".jobs[] | select(.name == \"$TARGET_JOB_NAME\") | .id" | head -n 1)
+
+					if [ -z "$JOB_ID" ]; then
+					  echo "❌ Error: Could not find a job named '$TARGET_JOB_NAME'"
+					  echo "Available jobs:"
+					  gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" --jq '.jobs[].name'
+					  exit 1
+					fi
+
+					echo "✅ Found Job ID: $JOB_ID"
+
+					# 2. Download the log for that job
+					gh api "/repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs" > full_logs.txt
+
+					# 3. Grep the logs for the expected masked string.
+					if grep -Fq "$EXPECTED_MASKED_STRING" full_logs.txt; then
+					  echo "✅ PASS: Found expected masked log line: '$EXPECTED_MASKED_STRING'"
+					else
+					  echo "❌ FAIL: Could not find the masked log line. Did the job run?"
+					  exit 1
+					fi
+					"""#
 			},
 		]
 	}

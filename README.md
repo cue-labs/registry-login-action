@@ -1,22 +1,39 @@
 # Login to CUE Registry via GitHub OIDC
 
-A GitHub Action that authenticates to a CUE registry using GitHub's OIDC tokens.
+This GitHub Action authenticates to the [CUE Central
+Registry](https://registry.cue.works) (or a self-hosted registry) using GitHub's
+OIDC tokens.
+
+By default, it automatically configures the `cue` CLI credentials, allowing
+subsequent steps to run `cue mod publish` or other commands without manual
+authentication setup.
 
 ## Features
 
-- Authenticates using GitHub's OIDC provider (no static credentials needed)
-- Optionally, automatically configures `cue` CLI `logins.json` file with
-  registry credentials
+* **Zero-secret authentication:** Uses GitHub OIDC (OpenID Connect) to exchange
+  a temporary GitHub token for a CUE Registry token. No long-lived secrets are
+  required.
+* **Secure by default:** The generated access token is automatically masked as a
+  secret in workflow logs to prevent accidental leakage.
+* **Automatic CLI configuration:** Updates `~/.config/cue/logins.json` by
+  default, so the `cue` command works immediately.
+* **Flexible:** Can be configured to output a raw access token for use with
+  `curl` or other API clients.
 
 ## Prerequisites
 
-Your CUE Central Registry must be
-[configured](https://registry.cue.works/account/oidc) to trust the registry's
-OIDC endpoint.
+### 1. Configure Registry Trust
 
-The workflow job must contain a
-[`permissions`](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions)
-entry enabling access to the GitHub OIDC token:
+Your CUE Central Registry namespace must be configured to trust your GitHub
+repository.
+
+* **[Configure CUE Central Registry
+  OIDC](https://registry.cue.works/account/oidc)**
+
+### 2. Workflow Permissions
+
+The workflow job must have permission to request an OIDC token. Add the
+following `permissions` block to your job:
 
 ```yaml
 permissions:
@@ -25,91 +42,102 @@ permissions:
 
 ## Usage
 
-### Basic usage
+### Basic Usage (CUE Central Registry)
+
+This is the standard pattern. It authenticates with `registry.cue.works` and
+sets up the `cue` CLI.
 
 ```yaml
 - name: Login to CUE registry
   uses: cue-labs/registry-login-action@v1
+
 ```
 
-Once this is in place, the subsequent steps can use the `cue` CLI commands
-logged-in as specified in the CUE Central Registry trust configuration.
+### Advanced Usage
 
-### Using the access token
+#### Using a Custom Registry
 
-By default no additional steps are needed as the `cue` command is automatically
-authenticated after the login step.
+If you are using a registry other than the CUE Central Registry:
 
-For other use-cases, the action outputs an `access_token` that can be used as a
-bearer token for direct API calls:
+```yaml
+- name: Login to custom registry
+  uses: cue-labs/registry-login-action@v1
+  with:
+    registry: registry.example.com
+
+```
+
+#### Using the Access Token directly (API Mode)
+
+If you do not want to update the `logins.json` file (for example, to use the
+token with `curl`):
 
 ```yaml
 - name: Login to CUE registry
   id: oidc
   uses: cue-labs/registry-login-action@v1
+  with:
+    update_logins: false
 
-- name: Test registry access
+- name: Call Registry API
   run: |
     curl -sSL https://registry.cue.works/v2/ \
       -H "Authorization: Bearer ${{ steps.oidc.outputs.access_token }}"
+
 ```
 
 ## Inputs
 
 | Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `registry` | CUE registry hostname | No | `registry.cue.works` |
-| `update_logins` | Whether to update the local CUE logins.json file | No | `true` |
+| --- | --- | --- | --- |
+| `registry` | The hostname of the CUE registry. | No | `registry.cue.works` |
+| `update_logins` | If `true`, writes credentials to the standard CUE `logins.json` file. | No | `true` |
 
 ## Outputs
 
 | Output | Description |
-|--------|-------------|
-| `access_token` | The access token obtained from the registry |
+| --- | --- |
+| `access_token` | The short-lived OAuth access token obtained from the registry. **This value is masked as a secret in logs.** |
 
-## How it works
+## Complete Workflow Example
 
-1. Obtains a GitHub OIDC token with the registry URL as the audience
-2. Exchanges the OIDC token for a registry access token
-3. Optionally configures the `cue` CLI with the registry credentials in `~/.config/cue/logins.json`
-
-## Example workflow
+This example demonstrates a full release pipeline that publishes a module when a
+tag is pushed.
 
 ```yaml
 name: Publish CUE module
 
 on:
-  # Example
   push:
-    tags:
-    - 'v*'
+    tags: ['v*']
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
-    # Enable GitHub OIDC token
     permissions:
+      # Required for OIDC authentication
       id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
-      - uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      # Log into the registry using OIDC
+      # Log into the registry (updates ~/.config/cue/logins.json)
       - name: Login to CUE registry
-        id: oidc
         uses: cue-labs/registry-login-action@v1
 
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v5
         with:
           go-version: '1.25'
 
-      - name: Install Cue
+      - name: Install CUE
         run: go install cuelang.org/go/cmd/cue@latest
 
       - name: Publish module
-        run: |
-          cue mod publish ${{ github.ref_name }}
+        # The 'cue' command is already authenticated by the login action
+        run: cue mod publish ${{ github.ref_name }}
+
 ```
+

@@ -55,5 +55,41 @@ jobs:
         run: |-
           echo "github.event.head_commit.message contains Dispatch-Trailer but we are on a protected branch"
           false
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          cache: false
+          go-version: 1.25.x
+      - name: Set common go env vars
+        run: |-
+          case $(go env GOARCH) in
+          amd64) go env -w GOAMD64=v3 ;;   # 2013 and later; makes `go test -race` 15% faster
+          arm64) go env -w GOARM64=v8.6 ;; # Apple M2 and later
+          esac
+
+          # Dump env for good measure
+          go env
+      - if: github.event_name != 'schedule' && matrix.runner != 'ns-windows-amd64'
+        uses: namespacelabs/nscloud-cache-action@v1
+        with:
+          cache: go
+      - if: |-
+          github.repository == 'cue-labs/registry-login-action' && (((github.ref == 'refs/heads/main') && (! (contains(github.event.head_commit.message, '
+          Dispatch-Trailer: {"type":"')))) || (github.ref == 'refs/heads/ci/test'))
+        run: go env -w GOFLAGS=-count=1
+      - name: Verify
+        run: go mod verify
+      - name: Generate
+        run: go generate ./...
+      - name: Test
+        run: go test ./...
+      - name: Race test
+        run: go test -race ./...
+      - run: |-
+          go mod tidy -diff
+          go vet ./...
+      - if: always()
+        name: Check that git is clean at the end of the job
+        run: test -z "$(git status --porcelain)" || (git status; git diff; false)
       - name: Login to CUE Central Registry
         uses: ./

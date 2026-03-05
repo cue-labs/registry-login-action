@@ -28,13 +28,14 @@ runs:
           const registryUrl = `https://${registry}`;
 
           // Get OIDC token with registry as audience
+          if (!process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
+            throw new Error('Missing ID request token. Did you specify the id-token: write permission?')
+          }
           let token = null;
           try {
             token = await core.getIDToken(registryUrl);
           } catch (e) {
-            throw new Error(
-              `Failed to obtain OIDC token. Did you specify the id-token: write permission? ${e.message}`,
-            );
+            throw new Error(`Request to GitHub IDToken API failed. ${e.message}`)
           }
 
           // Exchange OIDC token for registry access token

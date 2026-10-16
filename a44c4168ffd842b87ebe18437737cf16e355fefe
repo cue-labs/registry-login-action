@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "111e377c_1b1b8b2b",
+        "filename": "action.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1037639
+      },
+      "writtenOn": "2026-10-16T10:11:10Z",
+      "side": 1,
+      "message": "Linux retransmits the first SYN after about one second, so a single dropped packet still trips the 1s attempt timeout. Suggest increasing the timeout to 3-5s",
+      "revId": "a44c4168ffd842b87ebe18437737cf16e355fefe",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5608d3aa_83ac52ca",
+        "filename": "action.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1037639
+      },
+      "writtenOn": "2026-10-16T10:11:10Z",
+      "side": 1,
+      "message": "I was about to say Happy Eyeballs doesn\u0027t work that way, but I\u0027ll be damned, Node.js implementation is indeed fubar!\nSuggest adding a reference to https://github.com/nodejs/node/issues/54359",
+      "revId": "a44c4168ffd842b87ebe18437737cf16e355fefe",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c5172216_ae7a411b",
+        "filename": "action.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1037639
+      },
+      "writtenOn": "2026-10-16T10:11:10Z",
+      "side": 1,
+      "message": "Suggest printing `e.cause?.errors?.map(x \u003d\u003e x.message)` to log per-address errors, this should help with the diagnosis.",
+      "revId": "a44c4168ffd842b87ebe18437737cf16e355fefe",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

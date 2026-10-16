@@ -12,14 +12,34 @@ try {
   throw new Error(`Request to GitHub IDToken API failed. ${e.message}`)
 }
 
-// Exchange OIDC token for registry access token
-const res = await fetch(`${registryUrl}/login/oidc/github`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ id_token: token }),
-});
+// Node abandons a connection attempt after 250ms by default and moves on to
+// the next address, so a slow IPv4 handshake on a host without IPv6 fails.
+// Allow for a retransmitted SYN. See https://github.com/nodejs/node/issues/54359.
+require("net").setDefaultAutoSelectFamilyAttemptTimeout(2000);
+
+// Exchange OIDC token for registry access token,
+// retrying network errors such as failing to connect.
+let res;
+for (let attempt = 1; ; attempt++) {
+  try {
+    res = await fetch(`${registryUrl}/login/oidc/github`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id_token: token }),
+    });
+    break;
+  } catch (e) {
+    if (attempt >= 3) {
+      throw e;
+    }
+    // Connecting to multiple addresses fails with an AggregateError.
+    const causes = e.cause?.errors ?? [e.cause];
+    core.warning(`${registry}: ${e.message}: ${causes.map((c) => c?.message).join(", ")}; retrying`);
+    await require("timers/promises").setTimeout(attempt * 1000);
+  }
+}
 if (!res.ok) {
   let msg = `HTTP ${res.status} ${res.statusText}`;
   try {

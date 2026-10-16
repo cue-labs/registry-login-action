@@ -94,7 +94,7 @@ jobs:
           echo "github.event.head_commit.message contains Dispatch-Trailer but we are on a protected branch"
           false
       - name: Install CUE
-        uses: cue-lang/setup-cue@v1.0.1
+        uses: cue-lang/setup-cue@v2.0.0
         with:
           version: latest
       - name: Install Go

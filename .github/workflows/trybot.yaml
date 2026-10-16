@@ -21,6 +21,7 @@ jobs:
     needs: test
     permissions:
       actions: read
+      contents: read
     steps:
       - name: Check logs for leak
         env:
@@ -57,13 +58,15 @@ jobs:
         shell: bash --noprofile --norc -euo pipefail {0}
     runs-on: namespace-profile-linux-amd64
     permissions:
+      contents: read
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
       - name: Reset git directory modification times
         run: touch -t 202211302355 $(find * -type d)
       - name: Restore git file modification times
@@ -101,13 +104,17 @@ jobs:
         uses: actions/setup-go@v6
         with:
           cache: false
-          go-version: 1.25.x
+          go-version: 1.26.x
       - name: Set common go env vars
         run: |-
           case $(go env GOARCH) in
           amd64) go env -w GOAMD64=v3 ;;   # 2013 and later; makes `go test -race` 15% faster
           arm64) go env -w GOARM64=v8.6 ;; # Apple M2 and later
           esac
+
+          # Otherwise `go test -race` sleeps for 1s on every package;
+          # see https://go.dev/issues/20364.
+          echo "GORACE=atexit_sleep_ms=10" >> $GITHUB_ENV
 
           # Dump env for good measure
           go env

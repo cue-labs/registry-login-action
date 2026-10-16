@@ -45,10 +45,13 @@ on the previous tag might stop working, such as renaming or removing an input
 or output, or a github-script upgrade which raises the node runtime.
 
 Users reference the moving major tag, `v1`. Releases are lightweight tags on
-`main`, without GitHub release notes:
+`main`, without GitHub release notes. Check that CI is green on the commit,
+then push the tags to Gerrit as the `chiefporcuepine` account, which has
+permission to create tags. Gerrit replicates them to GitHub.
 
-    git tag vX.Y.Z <commit> && git push origin vX.Y.Z
-    git tag -f vX vX.Y.Z && git push -f origin vX
+    remote=https://chiefporcuepine@cue.gerrithub.io/a/cue-labs/registry-login-action
+    git tag vX.Y.Z <commit> && git push $remote vX.Y.Z
+    git tag -f vX vX.Y.Z && git push -f $remote vX
 
 Changes are reviewed on Gerrit; see `codereview.cfg`. Issues live in the main
 cue-lang/cue repository, not here.

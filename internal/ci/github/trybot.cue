@@ -38,7 +38,7 @@ workflows: trybot: _repo.bashWorkflow & {
 
 			{
 				name: "Install CUE"
-				uses: "cue-lang/setup-cue@v1.0.1"
+				uses: "cue-lang/setup-cue@v2.0.0"
 				with: version: "latest"
 			},
 			for v in _installGo {v},
